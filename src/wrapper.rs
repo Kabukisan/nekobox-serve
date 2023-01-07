@@ -1,7 +1,8 @@
+use std::io;
 use std::fs::File;
 use std::convert::Into;
 use std::path::{PathBuf, Path};
-use std::process::{Command, CommandArgs};
+use std::process::{Command, Output};
 
 macro_rules! wrapper_builder {
     (
@@ -19,6 +20,10 @@ macro_rules! wrapper_builder {
                 $name {
                     command: Command::new(execute)
                 }
+            }
+
+            pub fn execute_command(&mut self) -> io::Result<Output> {
+                self.command.output()
             }
 
             $(
