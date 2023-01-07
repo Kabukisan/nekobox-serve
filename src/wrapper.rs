@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::convert::Into;
 use std::path::{PathBuf, Path};
 use std::process::{Command, CommandArgs};
 
@@ -21,9 +22,10 @@ macro_rules! wrapper_builder {
             }
 
             $(
-                pub fn $func_name (&mut self, $($v: String),*) {
+                pub fn $func_name<'a>(&'a mut self, $($v: &'a str),*) -> &'a mut $name {
                     self.command.arg($cmd);
                     $( self.command.arg($v); )*
+                    self
                 }
             )*
         }
@@ -31,7 +33,7 @@ macro_rules! wrapper_builder {
 }
 
 wrapper_builder!(
-    name=YoutubeDl,
+    name=YoutubeDlWrapper,
     commands = {
         help("--help"),
         version("--version"),
