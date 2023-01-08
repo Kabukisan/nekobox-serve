@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use std::io;
 use std::fs::File;
 use std::convert::Into;
