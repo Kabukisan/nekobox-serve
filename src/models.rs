@@ -2,12 +2,14 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum MediaType {
     Video,
     Audio,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum MediaFormat {
     Aac,
     Flv,
@@ -19,7 +21,7 @@ pub enum MediaFormat {
     Webm,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TaskCreateRequest {
     url: String,
     media_type: MediaType,
@@ -27,6 +29,7 @@ pub struct TaskCreateRequest {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum TaskStatus {
     Pending,
     Complete,
@@ -34,7 +37,7 @@ pub enum TaskStatus {
 }
 
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TaskRequest {
     status_id: String,
 }
@@ -47,7 +50,7 @@ impl TaskRequest {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TaskResponse {
     status_id: String,
     status: TaskStatus,
@@ -78,7 +81,7 @@ impl TaskResponse {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AuthLoginRequest {
     username: String,
     password: String,
@@ -93,7 +96,7 @@ impl AuthLoginRequest {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct AuthLoginResponse {
     token: String,
     expires: DateTime<Utc>,
