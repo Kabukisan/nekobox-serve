@@ -25,6 +25,11 @@ macro_rules! wrapper_builder {
                 }
             }
 
+            pub fn arg<'a, S: Into<String>>(&'a mut self, arg: S) -> &'a mut $name {
+                self.command.arg(arg.into());
+                self
+            }
+
             pub fn execute_command(&mut self) -> io::Result<Output> {
                 self.command.output()
             }
