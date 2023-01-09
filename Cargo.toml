@@ -9,5 +9,7 @@ edition = "2021"
 tokio = { version = "1.24.1", features = ["full"]}
 axum = "0.6.1"
 serde = { version = "1.0.152", features = ["derive"]}
+serde_json = "1.0.91"
 redis = "0.22.2"
 chrono = { version = "0.4.23", features = ["serde"]}
+rand = "0.8.5"
