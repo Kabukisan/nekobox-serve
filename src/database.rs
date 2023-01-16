@@ -1,5 +1,8 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use std::env;
-use redis::{Client, Connection, ConnectionLike, RedisError};
+use redis::{Client, Connection};
 
 pub fn open_token_db_connection() -> Connection {
     open_db_connection("0")

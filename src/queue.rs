@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 
 use std::any::Any;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
