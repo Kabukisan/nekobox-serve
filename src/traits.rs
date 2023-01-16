@@ -3,7 +3,7 @@ use crate::models::{MediaFormat, MediaType};
 
 pub trait Delivery {
     fn title(&mut self) -> String;
-    fn download<S: Into<String>>(&mut self, url: S, media_type: MediaType, format: Option<MediaFormat>) -> String;
+    fn download(&mut self, media_type: MediaType, format: Option<MediaFormat>) -> String;
 }
 
 pub trait Description {
