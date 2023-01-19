@@ -26,9 +26,9 @@ pub enum MediaFormat {
 
 #[derive(Serialize, Deserialize)]
 pub struct TaskCreateRequest {
-    url: String,
-    media_type: MediaType,
-    format: MediaFormat,
+    pub url: String,
+    pub media_type: MediaType,
+    pub format: MediaFormat,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -55,10 +55,10 @@ impl TaskRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct TaskResponse {
-    status_id: String,
-    status: TaskStatus,
-    message: Option<String>,
-    percentage: f32,
+    pub status_id: String,
+    pub status: TaskStatus,
+    pub message: Option<String>,
+    pub percentage: f32,
 }
 
 impl TaskResponse {
@@ -86,8 +86,8 @@ impl TaskResponse {
 
 #[derive(Serialize, Deserialize)]
 pub struct AuthLoginRequest {
-    username: String,
-    password: String,
+    pub username: String,
+    pub password: String,
 }
 
 impl AuthLoginRequest {
@@ -101,8 +101,8 @@ impl AuthLoginRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct AuthLoginResponse {
-    token: String,
-    expires: DateTime<Utc>,
+    pub token: String,
+    pub expires: DateTime<Utc>,
 }
 
 impl AuthLoginResponse {
@@ -110,6 +110,25 @@ impl AuthLoginResponse {
         AuthLoginResponse {
             token: token.into(),
             expires,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AuthRegisterRequest {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub password_confirm: String,
+}
+
+impl AuthRegisterRequest {
+    pub fn new<S: Into<String>>(username: S, email: S, password: S, password_confirm: S) -> Self {
+        AuthRegisterRequest {
+            username: username.into(),
+            email: email.into(),
+            password: password.into(),
+            password_confirm: password_confirm.into(),
         }
     }
 }
