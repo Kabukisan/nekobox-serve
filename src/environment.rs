@@ -30,11 +30,11 @@ pub fn load_environment_config() -> Config {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct Config {
-    app: AppSection,
-    auth: AuthSection,
-    database: DatabaseSection,
-    redis: Option<RedisSection>,
-    sqlite: Option<SqliteSection>,
+    pub app: AppSection,
+    pub auth: AuthSection,
+    pub database: DatabaseSection,
+    pub redis: Option<RedisSection>,
+    pub sqlite: Option<SqliteSection>,
 }
 
 impl Default for Config {
@@ -52,8 +52,8 @@ impl Default for Config {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct AppSection {
-    name: String,
-    key: String,
+    pub name: String,
+    pub key: String,
 }
 
 impl Default for AppSection {
@@ -68,9 +68,9 @@ impl Default for AppSection {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct AuthSection {
-    allow_registration: bool,
-    token_secret: String,
-    token_timeout: i32,
+    pub allow_registration: bool,
+    pub token_secret: String,
+    pub token_timeout: i32,
 }
 
 impl Default for AuthSection {
@@ -86,8 +86,8 @@ impl Default for AuthSection {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct DatabaseSection {
-    queue_driver: QueueDriver,
-    auth_driver: AuthDriver,
+    pub queue_driver: QueueDriver,
+    pub auth_driver: AuthDriver,
 }
 
 impl Default for DatabaseSection {
@@ -114,11 +114,11 @@ pub enum AuthDriver {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct RedisSection {
-    host: String,
-    port: u32,
-    username: Option<String>,
-    password: Option<String>,
-    use_tls: bool,
+    pub host: String,
+    pub port: u32,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub use_tls: bool,
 }
 
 impl Default for RedisSection {
@@ -135,7 +135,7 @@ impl Default for RedisSection {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SqliteSection {
-    file: String,
+    pub file: String,
 }
 
 impl Default for SqliteSection {
