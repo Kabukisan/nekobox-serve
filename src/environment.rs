@@ -1,6 +1,31 @@
+use std::fs;
+use std::sync::Mutex;
+use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use crate::environment::AuthDriver::Sqlite;
 use crate::environment::QueueDriver::Redis;
+
+lazy_static! {
+    #[derive(Debug)]
+    pub static ref CONFIG: Mutex<Config> = Mutex::new(load_environment_config());
+}
+
+pub fn load_environment_config() -> Config {
+    let config_dir = ProjectDirs::from("com", "github", "nekobox")
+        .expect("Can't open path for configuration file")
+        .config_dir()
+        .to_path_buf();
+
+    let config_file = config_dir.join("config.toml");
+
+    let config_string = fs::read_to_string(&config_file)
+        .expect("Can't read configuration file");
+
+    let config: Config  = toml::from_str(&config_string)
+        .expect("Can't parse toml file correctly");
+
+    config
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
