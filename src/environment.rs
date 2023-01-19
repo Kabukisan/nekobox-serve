@@ -27,7 +27,7 @@ pub fn load_environment_config() -> Config {
     config
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct Config {
     pub app: AppSection,
@@ -49,7 +49,7 @@ impl Default for Config {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct AppSection {
     pub name: String,
@@ -65,7 +65,7 @@ impl Default for AppSection {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct AuthSection {
     pub allow_registration: bool,
@@ -83,7 +83,7 @@ impl Default for AuthSection {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct DatabaseSection {
     pub queue_driver: QueueDriver,
@@ -99,19 +99,19 @@ impl Default for DatabaseSection {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum QueueDriver {
     Redis,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum AuthDriver {
     Sqlite,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 pub struct RedisSection {
     pub host: String,
@@ -133,7 +133,7 @@ impl Default for RedisSection {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SqliteSection {
     pub file: String,
 }
