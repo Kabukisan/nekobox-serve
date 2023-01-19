@@ -2,9 +2,8 @@
 #![allow(unused_variables)]
 
 use std::io;
-use std::fs::File;
 use std::convert::Into;
-use std::path::{PathBuf, Path};
+use std::path::Path;
 use std::process::{Command, Output};
 
 macro_rules! wrapper_builder {
