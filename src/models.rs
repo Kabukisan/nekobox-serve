@@ -3,6 +3,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -24,8 +25,9 @@ pub enum MediaFormat {
     Webm,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct TaskCreateRequest {
+    #[validate(url)]
     pub url: String,
     pub media_type: MediaType,
     pub format: MediaFormat,
@@ -40,8 +42,9 @@ pub enum TaskStatus {
 }
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct TaskRequest {
+    #[validate(length(equal = 16))]
     status_id: String,
 }
 
@@ -53,8 +56,9 @@ impl TaskRequest {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct TaskResponse {
+    #[validate(length(equal = 16))]
     pub status_id: String,
     pub status: TaskStatus,
     pub message: Option<String>,
@@ -114,11 +118,14 @@ impl AuthLoginResponse {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct AuthRegisterRequest {
     pub username: String,
+    #[validate(email)]
     pub email: String,
+    #[validate(must_match = "password")]
     pub password: String,
+    #[validate(must_match(other = "password"))]
     pub password_confirm: String,
 }
 
