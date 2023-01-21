@@ -4,6 +4,7 @@ use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use crate::environment::AuthDriver::Sqlite;
 use crate::environment::QueueDriver::Redis;
+use lazy_static::lazy_static;
 
 lazy_static! {
     #[derive(Debug)]
