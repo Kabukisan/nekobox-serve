@@ -3,6 +3,9 @@
 
 const DEFAULT_SALT_COST: u32 = 10;
 
+use axum::async_trait;
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use base64::{Engine, engine::general_purpose::STANDARD as Base64Std};
 use crypto::bcrypt::bcrypt;
 use serde::{Serialize, Deserialize};
@@ -17,19 +20,46 @@ use jsonwebtoken::{
     errors::Result as JwtResult,
 };
 use crate::environment::CONFIG;
+use crate::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
+    id: usize,
+    email: String,
     username: String,
     exp: usize,
 }
 
 impl Claims {
-    pub fn new<S: Into<String>>(username: S, exp: usize) -> Claims {
+    pub fn new<S: Into<String>>(id: usize, email: S, username: S, exp: usize) -> Claims {
         Claims {
+            id,
+            email: email.into(),
             username: username.into(),
             exp,
         }
+    }
+}
+
+#[async_trait]
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync
+{
+    type Rejection = Error;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let token_header = parts.headers.get("Authorization");
+        let token_string = match token_header {
+            Some(value) => {
+                let token = value.to_str().unwrap();
+                token[7..token.len()].to_string()
+            }
+            None => return Err(Error::InvalidToken)
+        };
+        let token = validate_jwt(&token_string)?;
+
+        Ok(token.claims)
     }
 }
 
