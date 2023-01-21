@@ -59,31 +59,33 @@ impl TaskRequest {
 pub struct TaskResponse {
     #[validate(length(equal = 16))]
     pub status_id: String,
+    pub user_id: usize,
     pub status: TaskStatus,
     pub message: Option<String>,
     pub percentage: f32,
 }
 
 impl TaskResponse {
-    pub fn new<S: Into<String>>(status_id: S, status: TaskStatus, message: Option<String>, percentage: f32) -> Self {
+    pub fn new<S: Into<String>>(status_id: S, user_id: usize, status: TaskStatus, message: Option<String>, percentage: f32) -> Self {
         TaskResponse {
             status_id: status_id.into(),
+            user_id,
             status,
             message,
             percentage,
         }
     }
 
-    pub fn pending<S: Into<String>>(status_id: S) -> Self {
-        Self::new(status_id, TaskStatus::Pending, None, 0.0)
+    pub fn pending<S: Into<String>>(status_id: S, user_id: usize) -> Self {
+        Self::new(status_id,  user_id,TaskStatus::Pending, None, 0.0)
     }
 
-    pub fn complete<S: Into<String>, M: Into<Option<String>>>(status_id: S, message: M) -> Self {
-        Self::new(status_id, TaskStatus::Complete, message.into(), 1.0)
+    pub fn complete<S: Into<String>, M: Into<Option<String>>>(status_id: S, user_id: usize , message: M) -> Self {
+        Self::new(status_id, user_id, TaskStatus::Complete, message.into(), 1.0)
     }
 
-    pub fn error<S: Into<String>, M: Into<Option<String>>>(status_id: S, message: M) -> Self {
-        Self::new(status_id, TaskStatus::Error, message.into(), 0.0)
+    pub fn error<S: Into<String>, M: Into<Option<String>>>(status_id: S, user_id: usize, message: M) -> Self {
+        Self::new(status_id, user_id, TaskStatus::Error, message.into(), 0.0)
     }
 }
 
