@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -106,11 +105,11 @@ impl AuthLoginRequest {
 #[derive(Serialize, Deserialize)]
 pub struct AuthLoginResponse {
     pub token: String,
-    pub expires: DateTime<Utc>,
+    pub expires: usize,
 }
 
 impl AuthLoginResponse {
-    pub fn new<S: Into<String>>(token: S, expires: DateTime<Utc>) -> Self {
+    pub fn new<S: Into<String>>(token: S, expires: usize) -> Self {
         AuthLoginResponse {
             token: token.into(),
             expires,
@@ -118,7 +117,7 @@ impl AuthLoginResponse {
     }
 }
 
-#[derive(Serialize, Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 pub struct AuthRegisterRequest {
     pub username: String,
     #[validate(email)]
@@ -138,4 +137,11 @@ impl AuthRegisterRequest {
             password_confirm: password_confirm.into(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ErrorResponse {
+    pub response: u16,
+    pub error: String,
+    pub message: Option<String>,
 }
