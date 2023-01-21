@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use chrono::{Duration, Utc};
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{
     encode,
@@ -22,8 +21,7 @@ pub struct Claims {
 }
 
 impl Claims {
-    pub fn new<S: Into<String>>(username: S) -> Claims {
-        let exp: usize = (Utc::now() + Duration::days(12)).timestamp() as usize;
+    pub fn new<S: Into<String>>(username: S, exp: usize) -> Claims {
         Claims {
             username: username.into(),
             exp,
