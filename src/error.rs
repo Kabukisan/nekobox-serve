@@ -1,8 +1,14 @@
 use std::fmt::{Display, Formatter};
+use axum::http::StatusCode;
+use axum::Json;
+use axum::response::{IntoResponse, Response};
+use crate::models::ErrorResponse;
 
 #[derive(Debug)]
 pub enum Error {
     UserAlreadyExists,
+    InvalidToken,
+    JwtError(jsonwebtoken::errors::Error),
     ValidationError(validator::ValidationError),
     SqliteError(rusqlite::Error),
 }
@@ -22,5 +28,31 @@ impl From<rusqlite::Error> for Error {
 impl From<validator::ValidationError> for Error {
     fn from(value: validator::ValidationError) -> Self {
         Error::ValidationError(value)
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        Error::JwtError(value)
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> Response {
+        let (status, message) = match self {
+            Error::UserAlreadyExists => (StatusCode::BAD_REQUEST, "User already exists"),
+            Error::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
+            Error::JwtError(_) => (StatusCode::BAD_REQUEST, "Jwt Error"),
+            Error::ValidationError(_) => (StatusCode::BAD_REQUEST, "Failed to validate request"),
+            Error::SqliteError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Bad sql request"),
+        };
+
+        let response = ErrorResponse {
+            response: status.as_u16(),
+            error: self.to_string(),
+            message: Some(message.to_string()),
+        };
+
+        (status, Json(response)).into_response()
     }
 }
