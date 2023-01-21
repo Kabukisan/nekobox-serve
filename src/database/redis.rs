@@ -4,15 +4,11 @@
 use std::env;
 use redis::{Client, Connection};
 
-pub fn open_token_db_connection() -> Connection {
-    open_db_connection("0")
-}
-
 pub fn open_task_db_connection() -> Connection {
-    open_db_connection("1")
+    open_redis_db_connection("0")
 }
 
-pub fn open_db_connection(db: &str) -> Connection {
+pub fn open_redis_db_connection(db: &str) -> Connection {
     let redis_host_name = env::var("REDIS_HOSTNAME")
         .expect("missing environment variable REDIS_HOSTNAME");
 
