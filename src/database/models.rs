@@ -1,5 +1,6 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use crate::auth::make_hash;
 use crate::models::AuthRegisterRequest;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -31,7 +32,7 @@ impl From<AuthRegisterRequest> for User {
             id: None,
             email: value.email,
             username: value.username,
-            password: Some(value.password),
+            password: Some(make_hash(&value.password)),
             created_at: Utc::now().to_rfc3339(),
         }
     }

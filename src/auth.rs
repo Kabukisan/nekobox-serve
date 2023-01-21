@@ -1,6 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+const DEFAULT_SALT_COST: u32 = 10;
+
+use base64::{Engine, engine::general_purpose::STANDARD as Base64Std};
+use crypto::bcrypt::bcrypt;
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{
     encode,
@@ -47,4 +51,14 @@ pub fn validate_jwt(token: &str) -> JwtResult<TokenData<Claims>> {
         &DecodingKey::from_secret(secret.as_ref()),
         &Validation::default()
     )
+}
+
+pub fn make_hash(value: &str) -> String {
+    let key = CONFIG.lock().unwrap().app.key.clone();
+    let salt = key.as_bytes();
+
+    let mut output = [0u8; 24];
+    bcrypt(DEFAULT_SALT_COST, salt, value.as_bytes(), &mut output);
+
+    Base64Std.encode(output)
 }
