@@ -5,7 +5,7 @@ use crate::models::AuthRegisterRequest;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct User {
-    pub id: Option<u32>,
+    pub id: Option<usize>,
     pub email: String,
     pub username: String,
     pub password: Option<String>,
