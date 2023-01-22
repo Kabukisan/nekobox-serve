@@ -8,6 +8,8 @@ use crate::models::ErrorResponse;
 pub enum Error {
     UserAlreadyExists,
     InvalidToken,
+    RedisError(redis::RedisError),
+    JsonError(serde_json::Error),
     JwtError(jsonwebtoken::errors::Error),
     ValidationError(validator::ValidationError),
     SqliteError(rusqlite::Error),
@@ -37,11 +39,25 @@ impl From<jsonwebtoken::errors::Error> for Error {
     }
 }
 
+impl From<redis::RedisError> for Error {
+    fn from(value: redis::RedisError) -> Self {
+        Error::RedisError(value)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(value: serde_json::Error) -> Self {
+        Error::JsonError(value)
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let (status, message) = match self {
             Error::UserAlreadyExists => (StatusCode::BAD_REQUEST, "User already exists"),
             Error::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
+            Error::RedisError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Redis database failure"),
+            Error::JsonError(_) => (StatusCode::BAD_REQUEST, "Invalid json data"),
             Error::JwtError(_) => (StatusCode::BAD_REQUEST, "Jwt Error"),
             Error::ValidationError(_) => (StatusCode::BAD_REQUEST, "Failed to validate request"),
             Error::SqliteError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Bad sql request"),
