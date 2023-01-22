@@ -24,10 +24,10 @@ use crate::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
-    id: usize,
-    email: String,
-    username: String,
-    exp: usize,
+    pub id: usize,
+    pub email: String,
+    pub username: String,
+    pub exp: usize,
 }
 
 impl Claims {
