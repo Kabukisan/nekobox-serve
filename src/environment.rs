@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::PathBuf;
 use std::sync::Mutex;
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
@@ -9,6 +10,30 @@ use lazy_static::lazy_static;
 lazy_static! {
     #[derive(Debug)]
     pub static ref CONFIG: Mutex<Config> = Mutex::new(load_environment_config());
+}
+
+pub fn provide_cache_subdir(ident: &str) -> Option<PathBuf> {
+    let cache_dir = provide_cache_dir()?.join(ident);
+
+    if cache_dir.exists() == false {
+        fs::create_dir(&cache_dir)
+            .expect("Can't create cache subdir");
+    }
+
+    Some(cache_dir)
+}
+
+pub fn provide_cache_dir() -> Option<PathBuf> {
+    let cache_dir = ProjectDirs::from("com", "github", "nekobox")?
+        .cache_dir()
+        .to_path_buf();
+
+    if cache_dir.exists() == false {
+        fs::create_dir(&cache_dir)
+            .expect("Can't create cache directory");
+    }
+
+    Some(cache_dir)
 }
 
 pub fn load_environment_config() -> Config {
