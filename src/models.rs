@@ -11,6 +11,25 @@ pub enum MediaType {
     Audio,
 }
 
+impl ToString for MediaType {
+    fn to_string(&self) -> String {
+        match self {
+            MediaType::Video => "video".to_string(),
+            MediaType::Audio => "audio".to_string(),
+        }
+    }
+}
+
+impl From<&str> for MediaType {
+    fn from(value: &str) -> Self {
+        match value {
+            "video" => MediaType::Video,
+            "audio" => MediaType::Audio,
+            _ => MediaType::Video,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Format {
@@ -24,6 +43,37 @@ pub enum Format {
     Webm,
 }
 
+impl ToString for Format {
+    fn to_string(&self) -> String {
+        match self {
+            Format::Aac => "aac".to_string(),
+            Format::Flv => "flv".to_string(),
+            Format::M4a => "m4a".to_string(),
+            Format::Mp3 => "mp3".to_string(),
+            Format::Mp4 => "mp4".to_string(),
+            Format::Ogg => "ogg".to_string(),
+            Format::Wav => "wav".to_string(),
+            Format::Webm => "webm".to_string(),
+        }
+    }
+}
+
+impl From<&str> for Format {
+    fn from(value: &str) -> Self {
+        match value {
+            "aac" => Format::Aac,
+            "flv" => Format::Flv,
+            "m4a" => Format::M4a,
+            "mp3" => Format::Mp3,
+            "mp4" => Format::Mp4,
+            "ogg" => Format::Ogg,
+            "wav" => Format::Wav,
+            "webm" => Format::Webm,
+            _ => Format::Mp3,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum AudioFormat {
@@ -35,6 +85,37 @@ pub enum AudioFormat {
     Opus,
     Vorbis,
     Wav,
+}
+
+impl ToString for AudioFormat {
+    fn to_string(&self) -> String {
+        match self {
+            AudioFormat::Best => "best".to_string(),
+            AudioFormat::Aac => "aac".to_string(),
+            AudioFormat::Flac => "flac".to_string(),
+            AudioFormat::Mp3 => "mp3".to_string(),
+            AudioFormat::M4a => "m4a".to_string(),
+            AudioFormat::Opus => "opus".to_string(),
+            AudioFormat::Vorbis => "vorbis".to_string(),
+            AudioFormat::Wav => "wav".to_string(),
+        }
+    }
+}
+
+impl From<&str> for AudioFormat {
+    fn from(value: &str) -> Self {
+        match value {
+            "best" => AudioFormat::Best,
+            "aac" => AudioFormat::Aac,
+            "flac" => AudioFormat::Flac,
+            "mp3" => AudioFormat::Mp3,
+            "m4a" => AudioFormat::M4a,
+            "opus" => AudioFormat::Opus,
+            "vorbis" => AudioFormat::Vorbis,
+            "wav" => AudioFormat::Wav,
+            _ => AudioFormat::Best,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Validate)]
