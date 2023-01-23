@@ -24,6 +24,11 @@ macro_rules! wrapper_builder {
                 }
             }
 
+            pub fn current_dir<'a>(&'a mut self, dir: &Path) -> &'a mut $name {
+                self.command.current_dir(dir);
+                self
+            }
+
             pub fn arg<'a, S: Into<String>>(&'a mut self, arg: S) -> &'a mut $name {
                 self.command.arg(arg.into());
                 self
