@@ -1,9 +1,9 @@
 use std::fs::File;
-use crate::models::{MediaFormat, MediaType};
+use crate::models::{Format, MediaType};
 
 pub trait Delivery {
     fn title(&mut self) -> String;
-    fn download(&mut self, media_type: MediaType, format: Option<MediaFormat>) -> String;
+    fn download(&mut self, media_type: MediaType, format: Option<Format>) -> String;
 }
 
 pub trait Description {
