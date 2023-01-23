@@ -4,16 +4,16 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum MediaType {
     Video,
     Audio,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
-pub enum MediaFormat {
+pub enum Format {
     Aac,
     Flv,
     M4a,
@@ -24,15 +24,28 @@ pub enum MediaFormat {
     Webm,
 }
 
+#[derive(Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum AudioFormat {
+    Best,
+    Aac,
+    Flac,
+    Mp3,
+    M4a,
+    Opus,
+    Vorbis,
+    Wav,
+}
+
 #[derive(Serialize, Deserialize, Validate)]
 pub struct TaskCreateRequest {
     #[validate(url)]
     pub url: String,
     pub media_type: MediaType,
-    pub format: MediaFormat,
+    pub format: Format,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum TaskStatus {
     Pending,
