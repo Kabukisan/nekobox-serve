@@ -4,7 +4,7 @@
 use std::io;
 use std::convert::Into;
 use std::path::Path;
-use std::process::{Command, Output, Child};
+use std::process::{Command, Output, Child, Stdio};
 
 macro_rules! wrapper_builder {
     (
@@ -24,12 +24,12 @@ macro_rules! wrapper_builder {
                 }
             }
 
-            pub fn current_dir<'a>(&'a mut self, dir: &Path) -> &'a mut $name {
+            pub fn current_dir(&mut self, dir: &Path) -> &mut $name {
                 self.command.current_dir(dir);
                 self
             }
 
-            pub fn arg<'a, S: Into<String>>(&'a mut self, arg: S) -> &'a mut $name {
+            pub fn arg<S: Into<String>>(&mut self, arg: S) -> &mut $name {
                 self.command.arg(arg.into());
                 self
             }
@@ -38,12 +38,22 @@ macro_rules! wrapper_builder {
                 self.command.output()
             }
 
+            pub fn stdout<T: Into<Stdio>>(&mut self, cfg: T) -> &mut $name {
+                self.command.stdout(cfg);
+                self
+            }
+
+            pub fn stderr<T: Into<Stdio>>(&mut self, cfg: T) -> &mut $name {
+                self.command.stderr(cfg);
+                self
+            }
+
             pub fn spawn_command(&mut self) -> io::Result<Child> {
                 self.command.spawn()
             }
 
             $(
-                pub fn $func_name<'a>(&'a mut self, $($v: &'a str),*) -> &'a mut $name {
+                pub fn $func_name(&mut self, $($v: &str),*) -> &mut $name {
                     self.command.arg($cmd);
                     $( self.command.arg($v); )*
                     self
