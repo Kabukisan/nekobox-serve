@@ -126,7 +126,7 @@ pub struct TaskCreateRequest {
     pub format: Format,
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum TaskStatus {
     Pending,
@@ -135,7 +135,7 @@ pub enum TaskStatus {
 }
 
 
-#[derive(Serialize, Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Clone)]
 pub struct TaskRequest {
     #[validate(length(equal = 16))]
     status_id: String,
@@ -149,7 +149,7 @@ impl TaskRequest {
     }
 }
 
-#[derive(Serialize, Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Clone)]
 pub struct TaskResponse {
     #[validate(length(equal = 16))]
     pub status_id: String,
