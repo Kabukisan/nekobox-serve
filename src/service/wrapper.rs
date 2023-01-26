@@ -4,7 +4,7 @@
 use std::io;
 use std::convert::Into;
 use std::path::Path;
-use std::process::{Command, Output};
+use std::process::{Command, Output, Child};
 
 macro_rules! wrapper_builder {
     (
@@ -36,6 +36,10 @@ macro_rules! wrapper_builder {
 
             pub fn execute_command(&mut self) -> io::Result<Output> {
                 self.command.output()
+            }
+
+            pub fn spawn_command(&mut self) -> io::Result<Child> {
+                self.command.spawn()
             }
 
             $(
