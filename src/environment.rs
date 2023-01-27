@@ -1,11 +1,11 @@
+use crate::environment::AuthDriver::Sqlite;
+use crate::environment::QueueDriver::Redis;
+use directories::ProjectDirs;
+use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
-use directories::ProjectDirs;
-use serde::{Deserialize, Serialize};
-use crate::environment::AuthDriver::Sqlite;
-use crate::environment::QueueDriver::Redis;
-use lazy_static::lazy_static;
 
 lazy_static! {
     #[derive(Debug)]
@@ -16,8 +16,7 @@ pub fn provide_cache_subdir(ident: &str) -> Option<PathBuf> {
     let cache_dir = provide_cache_dir()?.join(ident);
 
     if cache_dir.exists() == false {
-        fs::create_dir(&cache_dir)
-            .expect("Can't create cache subdir");
+        fs::create_dir(&cache_dir).expect("Can't create cache subdir");
     }
 
     Some(cache_dir)
@@ -29,8 +28,7 @@ pub fn provide_cache_dir() -> Option<PathBuf> {
         .to_path_buf();
 
     if cache_dir.exists() == false {
-        fs::create_dir(&cache_dir)
-            .expect("Can't create cache directory");
+        fs::create_dir(&cache_dir).expect("Can't create cache directory");
     }
 
     Some(cache_dir)
@@ -44,11 +42,9 @@ pub fn load_environment_config() -> Config {
 
     let config_file = config_dir.join("config.toml");
 
-    let config_string = fs::read_to_string(&config_file)
-        .expect("Can't read configuration file");
+    let config_string = fs::read_to_string(&config_file).expect("Can't read configuration file");
 
-    let config: Config  = toml::from_str(&config_string)
-        .expect("Can't parse toml file correctly");
+    let config: Config = toml::from_str(&config_string).expect("Can't parse toml file correctly");
 
     config
 }

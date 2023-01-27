@@ -1,19 +1,21 @@
-use std::path::PathBuf;
-use rusqlite::{Connection, Params, Statement};
 use crate::database::models::User;
 use crate::environment::CONFIG;
 use crate::error::Error;
+use rusqlite::{Connection, Params, Statement};
+use std::path::PathBuf;
 
 pub fn open_sqlite_db_connection() -> Connection {
     let db_path = {
         let config = CONFIG.lock().unwrap().clone();
-        config.sqlite
+        config
+            .sqlite
             .expect("There is no configuration for sqlite in config.toml")
-            .file.parse::<PathBuf>()
-    }.expect("Invalid path in section 'sqlite.file'");
+            .file
+            .parse::<PathBuf>()
+    }
+    .expect("Invalid path in section 'sqlite.file'");
 
-    let mut connection = Connection::open(&db_path)
-        .expect("Can't open sqlite database");
+    let mut connection = Connection::open(&db_path).expect("Can't open sqlite database");
 
     create_database_schema(&mut connection);
 
@@ -21,16 +23,18 @@ pub fn open_sqlite_db_connection() -> Connection {
 }
 
 fn create_database_schema(connection: &mut Connection) {
-    connection.execute(
-        "CREATE TABLE IF NOT EXISTS user (
+    connection
+        .execute(
+            "CREATE TABLE IF NOT EXISTS user (
             id          INTEGER PRIMARY KEY,
             username    TEXT NOT NULL,
             password    TEXT NOT NULL,
             email       TEXT NOT NULL,
             created_at  TEXT NOT NULL
             )",
-        ()
-    ).expect("Can't create user table schema for sqlite database");
+            (),
+        )
+        .expect("Can't create user table schema for sqlite database");
 }
 
 pub struct SqliteDatabaseHandler<'a>(&'a Connection);
@@ -61,7 +65,11 @@ impl<'a> SqliteDatabaseHandler<'a> {
         )
     }
 
-    fn first_user_of_statement<P: Params>(&self, sql: &str, params: P) -> Option<Result<User, Error>> {
+    fn first_user_of_statement<P: Params>(
+        &self,
+        sql: &str,
+        params: P,
+    ) -> Option<Result<User, Error>> {
         let mut statement = match self.0.prepare(sql) {
             Ok(value) => value,
             Err(_) => return None,
@@ -72,26 +80,26 @@ impl<'a> SqliteDatabaseHandler<'a> {
             Some(items.swap_remove(0))
         } else {
             None
-        }
+        };
     }
 
-    fn user_iter_of<P: Params>(params: P, statement: &mut Statement)
-        -> Vec<Result<User, Error>>
-    {
-        statement.query_map(params, |row| {
-            Ok(User {
-                id: row.get(0)?,
-                email: row.get(1)?,
-                username: row.get(2)?,
-                password: row.get(3)?,
-                created_at: row.get(4)?,
+    fn user_iter_of<P: Params>(params: P, statement: &mut Statement) -> Vec<Result<User, Error>> {
+        statement
+            .query_map(params, |row| {
+                Ok(User {
+                    id: row.get(0)?,
+                    email: row.get(1)?,
+                    username: row.get(2)?,
+                    password: row.get(3)?,
+                    created_at: row.get(4)?,
+                })
             })
-        }).unwrap().map(|v| {
-            match v {
+            .unwrap()
+            .map(|v| match v {
                 Ok(user) => Ok(user),
-                Err(e) => Err(Error::SqliteError(e))
-            }
-        }).collect()
+                Err(e) => Err(Error::SqliteError(e)),
+            })
+            .collect()
     }
 
     pub fn create_user(&self, user: &User) -> Result<usize, Error> {
@@ -99,16 +107,21 @@ impl<'a> SqliteDatabaseHandler<'a> {
             return Err(Error::UserAlreadyExists);
         }
 
-        Ok(
-            self.0.execute(
-                "INSERT INTO user(email, username, password, created_at) VALUES (?1, ?2, ?3, ?4)",
-                (&user.email, &user.username, &user.password, &user.created_at),
-            )?
-        )
+        Ok(self.0.execute(
+            "INSERT INTO user(email, username, password, created_at) VALUES (?1, ?2, ?3, ?4)",
+            (
+                &user.email,
+                &user.username,
+                &user.password,
+                &user.created_at,
+            ),
+        )?)
     }
 
     fn user_already_exists(&self, user: &User) -> Result<bool, Error> {
-        let mut statement = self.0.prepare("SELECT id FROM user WHERE email = ?1 OR username = ?2")?;
+        let mut statement = self
+            .0
+            .prepare("SELECT id FROM user WHERE email = ?1 OR username = ?2")?;
         Ok(statement.exists([&user.email, &user.username])?)
     }
 }

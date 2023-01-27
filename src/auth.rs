@@ -3,24 +3,18 @@
 
 const DEFAULT_SALT_COST: u32 = 10;
 
+use crate::environment::CONFIG;
+use crate::error::Error;
 use axum::async_trait;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
-use base64::{Engine, engine::general_purpose::STANDARD as Base64Std};
+use base64::{engine::general_purpose::STANDARD as Base64Std, Engine};
 use crypto::bcrypt::bcrypt;
-use serde::{Serialize, Deserialize};
 use jsonwebtoken::{
-    encode,
-    decode,
-    Header,
+    decode, encode, errors::Result as JwtResult, DecodingKey, EncodingKey, Header, TokenData,
     Validation,
-    EncodingKey,
-    DecodingKey,
-    TokenData,
-    errors::Result as JwtResult,
 };
-use crate::environment::CONFIG;
-use crate::error::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
@@ -44,7 +38,7 @@ impl Claims {
 #[async_trait]
 impl<S> FromRequestParts<S> for Claims
 where
-    S: Send + Sync
+    S: Send + Sync,
 {
     type Rejection = Error;
 
@@ -55,7 +49,7 @@ where
                 let token = value.to_str().unwrap();
                 token[7..token.len()].to_string()
             }
-            None => return Err(Error::InvalidToken)
+            None => return Err(Error::InvalidToken),
         };
         let token = validate_jwt(&token_string)?;
 
@@ -65,7 +59,11 @@ where
 
 pub fn generate_jwt(claims: &Claims) -> JwtResult<String> {
     let secret = &CONFIG.lock().unwrap().auth.token_secret;
-    encode(&Header::default(), claims, &EncodingKey::from_secret(secret.as_ref()))
+    encode(
+        &Header::default(),
+        claims,
+        &EncodingKey::from_secret(secret.as_ref()),
+    )
 }
 
 pub fn renew_jwt(token: &str) -> JwtResult<String> {
@@ -79,7 +77,7 @@ pub fn validate_jwt(token: &str) -> JwtResult<TokenData<Claims>> {
     decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret.as_ref()),
-        &Validation::default()
+        &Validation::default(),
     )
 }
 

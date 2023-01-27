@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::io;
 use std::convert::Into;
+use std::io;
 use std::path::Path;
-use std::process::{Command, Output, Child, Stdio};
+use std::process::{Child, Command, Output, Stdio};
 
 macro_rules! wrapper_builder {
     (

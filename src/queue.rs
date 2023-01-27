@@ -44,7 +44,10 @@ pub struct QueueData<T> {
     job_limit: usize,
 }
 
-impl<T> QueueData<T> where T: QueueJob + Send {
+impl<T> QueueData<T>
+where
+    T: QueueJob + Send,
+{
     pub fn new() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Self {
             jobs: Vec::<T>::new(),
@@ -63,7 +66,10 @@ pub struct Queue<T> {
     job_handles: Arc<Mutex<Vec<JoinHandle<()>>>>,
 }
 
-impl<T> Queue<T> where T: QueueJob + Send + 'static {
+impl<T> Queue<T>
+where
+    T: QueueJob + Send + 'static,
+{
     pub fn new() -> Self {
         Queue {
             data: QueueData::new(),
@@ -72,7 +78,7 @@ impl<T> Queue<T> where T: QueueJob + Send + 'static {
         }
     }
 
-    pub fn join(self) -> Result<(),  Box<dyn Any + Send + 'static>>{
+    pub fn join(self) -> Result<(), Box<dyn Any + Send + 'static>> {
         self.main_job_handle.unwrap().join()
     }
 
@@ -121,11 +127,12 @@ impl<T> Queue<T> where T: QueueJob + Send + 'static {
 
         self.main_job_handle = Some(job_handle);
     }
-
 }
 
 fn generate_job_thread<T>(mut job: T) -> JoinHandle<()>
-    where T: QueueJob + Send  + 'static {
+where
+    T: QueueJob + Send + 'static,
+{
     thread::spawn(move || {
         job.run();
     })

@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter};
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::{IntoResponse, Response};
 use crate::models::ErrorResponse;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::Json;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum Error {
@@ -13,6 +13,7 @@ pub enum Error {
     JwtError(jsonwebtoken::errors::Error),
     ValidationError(validator::ValidationError),
     SqliteError(rusqlite::Error),
+    UnexpectedError,
 }
 
 impl Display for Error {
@@ -61,6 +62,7 @@ impl IntoResponse for Error {
             Error::JwtError(_) => (StatusCode::BAD_REQUEST, "Jwt Error"),
             Error::ValidationError(_) => (StatusCode::BAD_REQUEST, "Failed to validate request"),
             Error::SqliteError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Bad sql request"),
+            Error::UnexpectedError => (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error"),
         };
 
         let response = ErrorResponse {

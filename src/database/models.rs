@@ -1,7 +1,7 @@
-use chrono::Utc;
-use serde::{Deserialize, Serialize};
 use crate::auth::make_hash;
 use crate::models::AuthRegisterRequest;
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct User {
@@ -14,7 +14,9 @@ pub struct User {
 
 impl User {
     pub fn new<S, P>(email: S, username: S, password: P) -> Self
-        where S: Into<String>, P: Into<Option<String>>
+    where
+        S: Into<String>,
+        P: Into<Option<String>>,
     {
         User {
             id: None,

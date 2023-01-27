@@ -1,5 +1,5 @@
-use std::fs::File;
 use crate::models::{Format, MediaType};
+use std::fs::File;
 
 pub trait Delivery {
     fn title(&mut self) -> String;
