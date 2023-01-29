@@ -13,7 +13,8 @@ pub enum Error {
     JwtError(jsonwebtoken::errors::Error),
     ValidationError(validator::ValidationError),
     SqliteError(rusqlite::Error),
-    UnexpectedError,
+    IoError(std::io::Error),
+    InternalError,
 }
 
 impl Display for Error {
@@ -52,6 +53,12 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+impl From<std::io::Error> for Error {
+    fn from(value: std::io::Error) -> Self {
+        Error::IoError(value)
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let (status, message) = match self {
@@ -62,7 +69,8 @@ impl IntoResponse for Error {
             Error::JwtError(_) => (StatusCode::BAD_REQUEST, "Jwt Error"),
             Error::ValidationError(_) => (StatusCode::BAD_REQUEST, "Failed to validate request"),
             Error::SqliteError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Bad sql request"),
-            Error::UnexpectedError => (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error"),
+            Error::IoError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Io error"),
+            Error::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, "internal error"),
         };
 
         let response = ErrorResponse {
