@@ -22,6 +22,15 @@ pub fn provide_cache_subdir(ident: &str) -> Option<PathBuf> {
     Some(cache_dir)
 }
 
+pub fn delete_cache_subdir(ident: &str) -> Result<bool, std::io::Error> {
+    let cache_dir = match provide_cache_dir() {
+        Some(directory) => directory.join(ident),
+        None => return Ok(false),
+    };
+    fs::remove_dir_all(&cache_dir)?;
+    Ok(true)
+}
+
 pub fn provide_cache_dir() -> Option<PathBuf> {
     let cache_dir = ProjectDirs::from("com", "github", "nekobox")?
         .cache_dir()
