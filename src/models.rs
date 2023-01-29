@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Copy, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum MediaType {
     Video,
@@ -74,7 +74,7 @@ impl From<&str> for Format {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Copy, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum AudioFormat {
     Best,
@@ -123,10 +123,10 @@ pub struct TaskCreateRequest {
     #[validate(url)]
     pub url: String,
     pub media_type: MediaType,
-    pub format: Format,
+    pub audio_format: Option<AudioFormat>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum TaskStatus {
     Pending,
@@ -148,7 +148,7 @@ impl TaskRequest {
     }
 }
 
-#[derive(Serialize, Deserialize, Validate, Clone)]
+#[derive(Serialize, Deserialize, Validate, Debug, Clone)]
 pub struct TaskResponse {
     #[validate(length(equal = 16))]
     pub status_id: String,
