@@ -30,7 +30,7 @@ impl YoutubeDl {
 
     fn prepare_command(&mut self) -> Result<(YoutubeDlWrapper, PathBuf), Error> {
         let working_directory = provide_cache_subdir(&self.task.as_ref().unwrap().status_id)
-            .ok_or(Error::UnexpectedError)?;
+            .ok_or(Error::InternalError)?;
         let mut wrapper = YoutubeDlWrapper::new(Path::new("youtube-dl"));
         wrapper.current_dir(&working_directory);
         wrapper.arg(self.url.as_ref().unwrap());
