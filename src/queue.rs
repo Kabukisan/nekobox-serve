@@ -24,8 +24,8 @@ pub trait QueueJob {
     fn run(&mut self);
 }
 
-pub struct QueueData<T> {
-    jobs: Vec<T>,
+pub struct QueueData {
+    jobs: Vec<Box<dyn QueueJob + Send + 'static>>,
     /// The number of jobs that can run in parallel before a new job starts.
     simultaneously: usize,
     /// The delay between individual jobs
@@ -44,13 +44,10 @@ pub struct QueueData<T> {
     job_limit: usize,
 }
 
-impl<T> QueueData<T>
-where
-    T: QueueJob + Send,
-{
+impl QueueData {
     pub fn new() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Self {
-            jobs: Vec::<T>::new(),
+            jobs: Vec::<Box<_>>::new(),
             simultaneously: 2,
             delay: Duration::from_secs(2),
             sampling_rate: Duration::from_secs(2),
@@ -60,16 +57,13 @@ where
     }
 }
 
-pub struct Queue<T> {
-    data: Arc<Mutex<QueueData<T>>>,
+pub struct Queue {
+    data: Arc<Mutex<QueueData>>,
     main_job_handle: Option<JoinHandle<()>>,
     job_handles: Arc<Mutex<Vec<JoinHandle<()>>>>,
 }
 
-impl<T> Queue<T>
-where
-    T: QueueJob + Send + 'static,
-{
+impl Queue {
     pub fn new() -> Self {
         Queue {
             data: QueueData::new(),
@@ -82,8 +76,8 @@ where
         self.main_job_handle.unwrap().join()
     }
 
-    pub fn push(&mut self, job: T) {
-        self.data.lock().unwrap().jobs.insert(0, job);
+    pub fn push(&mut self, job: impl QueueJob + Send + 'static) {
+        self.data.lock().unwrap().jobs.insert(0, Box::new(job));
     }
 
     pub fn schedule(&mut self) {
@@ -129,9 +123,9 @@ where
     }
 }
 
-fn generate_job_thread<T>(mut job: T) -> JoinHandle<()>
+fn generate_job_thread<T>(mut job: Box<T>) -> JoinHandle<()>
 where
-    T: QueueJob + Send + 'static,
+    T: QueueJob + Send + ?Sized + 'static,
 {
     thread::spawn(move || {
         job.run();
