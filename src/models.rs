@@ -137,7 +137,7 @@ pub enum TaskStatus {
 #[derive(Serialize, Deserialize, Validate, Clone)]
 pub struct TaskRequest {
     #[validate(length(equal = 16))]
-    status_id: String,
+    pub status_id: String,
 }
 
 impl TaskRequest {
