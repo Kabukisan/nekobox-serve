@@ -1,10 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use crate::service::FetchCollection;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum MediaType {
     Video,
@@ -74,7 +75,7 @@ impl From<&str> for Format {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum AudioFormat {
     Best,
@@ -118,7 +119,7 @@ impl From<&str> for AudioFormat {
     }
 }
 
-#[derive(Serialize, Deserialize, Validate)]
+#[derive(Serialize, Deserialize, Validate, Debug, Clone)]
 pub struct TaskCreateRequest {
     #[validate(url)]
     pub url: String,
@@ -156,6 +157,9 @@ pub struct TaskResponse {
     pub status: TaskStatus,
     pub message: Option<String>,
     pub percentage: f32,
+    pub media_type: Option<MediaType>,
+    pub audio_format: Option<AudioFormat>,
+    pub collection: Option<FetchCollection>,
 }
 
 impl TaskResponse {
@@ -165,6 +169,9 @@ impl TaskResponse {
         status: TaskStatus,
         message: Option<String>,
         percentage: f32,
+        media_type: Option<MediaType>,
+        audio_format: Option<AudioFormat>,
+        collection: Option<FetchCollection>,
     ) -> Self {
         TaskResponse {
             status_id: status_id.into(),
@@ -172,11 +179,23 @@ impl TaskResponse {
             status,
             message,
             percentage,
+            media_type,
+            audio_format,
+            collection,
         }
     }
 
     pub fn pending<S: Into<String>>(status_id: S, user_id: usize) -> Self {
-        Self::new(status_id, user_id, TaskStatus::Pending, None, 0.0)
+        Self::new(
+            status_id,
+            user_id,
+            TaskStatus::Pending,
+            None,
+            0.0,
+            None,
+            None,
+            None,
+        )
     }
 
     pub fn complete<S: Into<String>, M: Into<Option<String>>>(
@@ -190,6 +209,9 @@ impl TaskResponse {
             TaskStatus::Complete,
             message.into(),
             1.0,
+            None,
+            None,
+            None,
         )
     }
 
@@ -198,7 +220,16 @@ impl TaskResponse {
         user_id: usize,
         message: M,
     ) -> Self {
-        Self::new(status_id, user_id, TaskStatus::Error, message.into(), 0.0)
+        Self::new(
+            status_id,
+            user_id,
+            TaskStatus::Error,
+            message.into(),
+            0.0,
+            None,
+            None,
+            None,
+        )
     }
 }
 
