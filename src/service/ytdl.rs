@@ -3,8 +3,7 @@ use crate::error::Error;
 use crate::models::{AudioFormat, MediaType, TaskResponse};
 use crate::service::wrapper::YoutubeDlWrapper;
 use crate::service::{
-    DownloadResponse, DownloadResult, FetchCollection, FetchService,
-    ResponseStatus,
+    DownloadResponse, DownloadResult, FetchCollection, FetchService, ResponseStatus,
 };
 use serde_json::Value::Null;
 use std::fs;
@@ -68,10 +67,7 @@ impl FetchService for Box<YoutubeDl> {
             return Err(Error::InternalError);
         }
 
-        let working_directory = self
-            .working_directory
-            .as_mut()
-            .unwrap();
+        let working_directory = self.working_directory.as_mut().unwrap();
 
         let json_file = fs::read_to_string(&working_directory.join("0.info.json"))?;
         let json: serde_json::Value = serde_json::from_str(&json_file)?;
@@ -130,7 +126,6 @@ impl FetchService for Box<YoutubeDl> {
 
         let mut output = wrapper
             .no_playlist()
-            .output("0.%(ext)s")
             .newline()
             .stdout(Stdio::piped())
             .spawn_command()?;
