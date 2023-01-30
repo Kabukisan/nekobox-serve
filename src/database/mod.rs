@@ -9,14 +9,14 @@ pub(crate) mod sqlite;
 
 pub fn set_task_response(task: &TaskResponse) -> Result<(), Error> {
     let mut connection = open_task_db_connection();
-    let json_string = serde_json::to_string(&task).unwrap();
+    let json_string = serde_json::to_string(&task)?;
     connection.set::<&str, String, String>(&task.status_id, json_string)?;
     Ok(())
 }
 
 pub fn get_task_response(task: &TaskRequest) -> Result<TaskResponse, Error> {
     let mut connection = open_task_db_connection();
-    let json_string = connection.get::<&str, String>(&task.status_id).unwrap();
+    let json_string = connection.get::<&str, String>(&task.status_id)?;
     Ok(serde_json::from_str(&json_string)?)
 }
 
