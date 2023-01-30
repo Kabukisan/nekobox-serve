@@ -1,15 +1,22 @@
-use crate::database::set_task_response;
 use crate::error::Error;
-use crate::models::{AudioFormat, MediaType, TaskResponse, TaskStatus};
+use crate::models::{AudioFormat, MediaType, TaskResponse};
 use crate::queue::QueueJob;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 mod wrapper;
 pub(crate) mod ytdl;
 
 type CollectResult = Result<FetchCollection, Error>;
 type DownloadResult = Result<DownloadResponse, Error>;
+
+pub trait FetchServiceEvents: Send {
+    fn on_start(&mut self);
+    fn on_end(&mut self);
+    fn on_complete(&mut self);
+    fn on_error(&mut self);
+}
 
 pub trait FetchService {
     fn prepare(&mut self, task: &TaskResponse, url: &str) -> Result<(), Error>;
@@ -27,9 +34,9 @@ where
 {
     url: String,
     service: Box<T>,
-    task: TaskResponse,
     media_type: MediaType,
     audio_format: Option<AudioFormat>,
+    observers: Vec<Arc<Mutex<dyn FetchServiceEvents>>>,
 }
 
 impl<T> FetchServiceHandler<T>
@@ -39,16 +46,47 @@ where
     pub fn new(
         url: &str,
         service: T,
-        task: TaskResponse,
         media_type: MediaType,
         audio_format: Option<AudioFormat>,
     ) -> Self {
         FetchServiceHandler {
             url: url.to_string(),
             service: Box::new(service),
-            task,
             media_type,
             audio_format,
+            observers: vec![],
+        }
+    }
+
+    pub fn add_observer(&mut self, observer: Arc<Mutex<dyn FetchServiceEvents>>) {
+        self.observers.push(observer);
+    }
+
+    fn fire_start_event(&mut self) {
+        for wrapped_observer in self.observers.clone() {
+            let mut observer = wrapped_observer.lock().unwrap();
+            observer.on_start();
+        }
+    }
+
+    fn fire_end_event(&mut self) {
+        for wrapped_observer in self.observers.clone() {
+            let mut observer = wrapped_observer.lock().unwrap();
+            observer.on_end();
+        }
+    }
+
+    fn fire_complete_event(&mut self) {
+        for wrapped_observer in self.observers.clone() {
+            let mut observer = wrapped_observer.lock().unwrap();
+            observer.on_complete();
+        }
+    }
+
+    fn fire_error_event(&mut self) {
+        for wrapped_observer in self.observers.clone() {
+            let mut observer = wrapped_observer.lock().unwrap();
+            observer.on_error();
         }
     }
 
@@ -74,17 +112,16 @@ where
     T: FetchService + Send + 'static,
 {
     fn run(&mut self) {
-        set_task_response(&self.task).expect("Failed to change task status");
+        self.fire_start_event();
         match self.service.download(self.media_type, self.audio_format) {
             Ok(_) => {
-                self.task.status = TaskStatus::Complete;
-                self.task.percentage = 1.0;
+                self.fire_complete_event();
             }
             Err(_) => {
-                self.task.status = TaskStatus::Error;
+                self.fire_error_event();
             }
         };
-        set_task_response(&self.task).expect("Failed to change task status");
+        self.fire_end_event();
     }
 }
 
@@ -107,7 +144,7 @@ pub enum ResponseStatus {
     Failed,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FetchCollection {
     pub title: Option<String>,
     pub description: Option<String>,
