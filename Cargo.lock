@@ -602,7 +602,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nekobox-rest"
+name = "nekobox-serve"
 version = "0.1.0"
 dependencies = [
  "axum",
