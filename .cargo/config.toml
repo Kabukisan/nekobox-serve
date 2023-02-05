@@ -1,0 +1,33 @@
+[env]
+# You have the possibility to change the variant of the build.
+# It affects the environment, this means where are the configuration files read from.
+# 'standalone': All files are in the same folder as the binary
+# 'system': Configuration and cache data are distributed throughout the system
+# 'user': All files refer to the user running them binary
+# See environment.rs for details
+BUILD_VARIANT = "standalone"
+
+# Windows Systems
+# System
+BUILD_WINDOWS_SYSTEM_CFG    = "{BINARY_DIR}/config/"
+BUILD_WINDOWS_SYSTEM_CACHE  = "{BINARY_DIR}/cache/"
+# User
+BUILD_WINDOWS_USER_CFG      = "{USER_DIR}/AppData/Local/nekobox/"
+BUILD_WINDOWS_USER_CACHE    = "{USER_DIR}/AppData/Local/nekobox/cache/"
+
+# LINUX System
+# System
+BUILD_UNIX_SYSTEM_CFG       = "/etc/nekobox/"
+BUILD_UNIX_SYSTEM_CACHE     = "/tmp/nekobox/"
+# User
+BUILD_UNIX_USER_CFG         = "{USER_DIR}/.nekobox/"
+BUILD_UNIX_USER_CACHE       = "{USER_DIR}/.nekobox/cache/"
+
+
+# MacOS
+# System
+BUILD_MACOS_SYSTEM_CFG      = "/etc/nekobox/"
+BUILD_MACOS_SYSTEM_CACHE    = "/tmp/nekobox/"
+# User
+BUILD_MACOS_USER_CFG         = "{USER_DIR}/Library/Preferences/com.github.nekobox/"
+BUILD_MACOS_USER_CACHE       = "{USER_DIR}/Library/Caches/com.github.nekobox/"

@@ -1,61 +1,17 @@
 use crate::environment::AuthDriver::Sqlite;
 use crate::environment::QueueDriver::Redis;
-use directories::ProjectDirs;
+use directories::UserDirs;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::{fs, io};
+
+static BUILD_VARIANT: Option<&str> = option_env!("BUILD_VARIANT");
 
 lazy_static! {
     #[derive(Debug)]
     pub static ref CONFIG: Mutex<Config> = Mutex::new(load_environment_config());
-}
-
-pub fn provide_cache_subdir(ident: &str) -> Option<PathBuf> {
-    let cache_dir = provide_cache_dir()?.join(ident);
-
-    if cache_dir.exists() == false {
-        fs::create_dir(&cache_dir).expect("Can't create cache subdir");
-    }
-
-    Some(cache_dir)
-}
-
-pub fn delete_cache_subdir(ident: &str) -> Result<bool, std::io::Error> {
-    let cache_dir = match provide_cache_dir() {
-        Some(directory) => directory.join(ident),
-        None => return Ok(false),
-    };
-    fs::remove_dir_all(&cache_dir)?;
-    Ok(true)
-}
-
-pub fn provide_cache_dir() -> Option<PathBuf> {
-    let cache_dir = ProjectDirs::from("com", "github", "nekobox")?
-        .cache_dir()
-        .to_path_buf();
-
-    if cache_dir.exists() == false {
-        fs::create_dir(&cache_dir).expect("Can't create cache directory");
-    }
-
-    Some(cache_dir)
-}
-
-pub fn load_environment_config() -> Config {
-    let config_dir = ProjectDirs::from("com", "github", "nekobox")
-        .expect("Can't open path for configuration file")
-        .config_dir()
-        .to_path_buf();
-
-    let config_file = config_dir.join("config.toml");
-
-    let config_string = fs::read_to_string(&config_file).expect("Can't read configuration file");
-
-    let config: Config = toml::from_str(&config_string).expect("Can't parse toml file correctly");
-
-    config
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -175,4 +131,156 @@ impl Default for SqliteSection {
             file: "nekobox.db".to_string(),
         }
     }
+}
+
+pub fn provide_cache_subdir(ident: &str) -> Option<PathBuf> {
+    let cache_dir = provide_cache_dir()?.join(ident);
+
+    if cache_dir.exists() == false {
+        fs::create_dir(&cache_dir).expect("Can't create cache subdir");
+    }
+
+    Some(cache_dir)
+}
+
+pub fn delete_cache_subdir(ident: &str) -> Result<bool, io::Error> {
+    let cache_dir = match provide_cache_dir() {
+        Some(directory) => directory.join(ident),
+        None => return Ok(false),
+    };
+    fs::remove_dir_all(&cache_dir)?;
+    Ok(true)
+}
+
+pub fn provide_cache_dir() -> Option<PathBuf> {
+    let (_, cache_path) = provide_directories().expect("Cannot provide cache path");
+
+    if cache_path.exists() == false {
+        fs::create_dir(&cache_path).expect("Can't create cache directory");
+    }
+
+    Some(cache_path)
+}
+
+pub fn load_environment_config() -> Config {
+    let (cfg_path, _) = provide_directories().expect("Cannot provide configuration file");
+
+    let config_file = cfg_path.join("config.toml");
+
+    let config_string = fs::read_to_string(&config_file).expect("Can't read configuration file");
+
+    let config: Config = toml::from_str(&config_string).expect("Can't parse toml file correctly");
+
+    config
+}
+
+pub fn provide_directories() -> Result<(PathBuf, PathBuf), io::Error> {
+    let (cfg_path, cache_path) = match BUILD_VARIANT.unwrap_or("standalone") {
+        "system" => system_directories(),
+        "user" => user_directories(),
+        _ => standalone_directories(),
+    }?;
+
+    Ok((cfg_path, cache_path))
+}
+
+fn standalone_directories() -> Result<(PathBuf, PathBuf), io::Error> {
+    let cfg_path = std::env::current_dir()?;
+    let cache_path = cfg_path.clone().join("cache");
+
+    Ok((cfg_path, cache_path))
+}
+
+fn system_directories() -> Result<(PathBuf, PathBuf), io::Error> {
+    let (cfg_path_string, cache_path_string) = if cfg!(target_os = "macos") {
+        let cfg = option_env!("BUILD_MACOS_SYSTEM_CFG").unwrap_or("/etc/nekobox/");
+        let cache = option_env!("BUILD_MACOS_SYSTEM_CACHE").unwrap_or("/tmp/nekobox/");
+
+        (cfg, cache)
+    } else if cfg!(target_od = "windows") {
+        let cfg = option_env!("BUILD_WINDOWS_SYSTEM_CFG").unwrap_or("{BINARY_DIR}/config/");
+        let cache = option_env!("BUILD_WINDOWS_SYSTEM_CACHE").unwrap_or("{BINARY_DIR}/cache/");
+
+        (cfg, cache)
+    } else if cfg!(target_os = "linux") {
+        let cfg = option_env!("BUILD_LINUX_SYSTEM_CFG").unwrap_or("/etc/nekobox/");
+        let cache = option_env!("BUILD_LINUX_SYSTEM_CACHE").unwrap_or("/tmp/nekobox/");
+
+        (cfg, cache)
+    } else {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "Unsupported environment",
+        ));
+    };
+
+    let cfg_path: PathBuf = interpret_value(cfg_path_string)?.into();
+    let cache_path: PathBuf = interpret_value(cache_path_string)?.into();
+
+    Ok((cfg_path, cache_path))
+}
+
+fn user_directories() -> Result<(PathBuf, PathBuf), io::Error> {
+    let (cfg_path_string, cache_path_string) = if cfg!(target_os = "macos") {
+        let cfg = option_env!("BUILD_MACOS_USER_CFG")
+            .unwrap_or("{USER_DIR}/Library/Preferences/com.github.nekobox/");
+        let cache = option_env!("BUILD_MACOS_USER_CACHE")
+            .unwrap_or("{USER_DIR}/Library/Caches/com.github.nekobox/");
+
+        (cfg, cache)
+    } else if cfg!(target_os = "windows") {
+        let cfg =
+            option_env!("BUILD_WINDOWS_USER_CFG").unwrap_or("{USER_DIR}/AppData/Local/nekobox/");
+        let cache = option_env!("BUILD_WINDOWS_USER_CACHE")
+            .unwrap_or("{USER_DIR}/AppData/Local/nekobox/cache/");
+
+        (cfg, cache)
+    } else if cfg!(target_os = "linux") {
+        let cfg = option_env!("BUILD_LINUX_USER_CFG").unwrap_or("{USER_DIR}/.nekobox/");
+        let cache = option_env!("BUILD_LINUX_USER_CACHE").unwrap_or("{USER_DIR}/.nekobox/cache/");
+
+        (cfg, cache)
+    } else {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "Unsupported environment",
+        ));
+    };
+
+    let cfg_path: PathBuf = interpret_value(cfg_path_string)?.into();
+    let cache_path: PathBuf = interpret_value(cache_path_string)?.into();
+
+    Ok((cfg_path, cache_path))
+}
+
+fn interpret_value(key: &str) -> Result<String, io::Error> {
+    let binary_dir = std::env::current_dir()?
+        .to_str()
+        .ok_or(io::Error::new(
+            io::ErrorKind::Other,
+            "Cannot convert path to str",
+        ))?
+        .to_string();
+    let user_dir = {
+        let user_dirs = UserDirs::new().ok_or(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Cannot find USER_DIR in this environment",
+        ))?;
+        user_dirs
+            .home_dir()
+            .to_path_buf()
+            .to_str()
+            .ok_or(io::Error::new(
+                io::ErrorKind::Other,
+                "Cannot convert path to str",
+            ))?
+            .to_string()
+    };
+
+    let result = key
+        .replace("{BINARY_DIR}", &binary_dir)
+        .replace("{USER_DIR}", &user_dir)
+        .to_string();
+
+    Ok(result)
 }
