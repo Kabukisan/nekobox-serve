@@ -1,0 +1,6 @@
+.idea
+cache
+target
+.env.toml
+config.toml
+nekobox.db
