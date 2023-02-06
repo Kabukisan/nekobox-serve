@@ -2,6 +2,7 @@ use crate::environment::AuthDriver::Sqlite;
 use crate::environment::QueueDriver::Redis;
 use directories::UserDirs;
 use lazy_static::lazy_static;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -167,11 +168,38 @@ pub fn load_environment_config() -> Config {
 
     let config_file = cfg_path.join("config.toml");
 
-    let config_string = fs::read_to_string(&config_file).expect("Can't read configuration file");
+    let config = match fs::read_to_string(&config_file) {
+        Ok(config_string) => {
+            toml::from_str(&config_string).expect("Can't parse toml file correctly")
+        }
+        Err(_) => {
+            let mut config = Config::default();
+            config.app.key = generate_secret(16);
 
-    let config: Config = toml::from_str(&config_string).expect("Can't parse toml file correctly");
+            let config_string = toml::to_string(&config).unwrap();
+            fs::write(&config_file, &config_string).expect("Can't create config.toml");
+
+            config
+        }
+    };
 
     config
+}
+
+fn generate_secret(digits: usize) -> String {
+    const SECRET_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                                    abcdefghijklmnopqrstuvwxyz\
+                                    0123456789";
+
+    let mut rng = rand::thread_rng();
+    let secret: String = (0..digits)
+        .map(|_| {
+            let idx = rng.gen_range(0..SECRET_CHARSET.len());
+            SECRET_CHARSET[idx] as char
+        })
+        .collect();
+
+    secret
 }
 
 pub fn provide_directories() -> Result<(PathBuf, PathBuf), io::Error> {
