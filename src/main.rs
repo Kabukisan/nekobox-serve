@@ -3,7 +3,7 @@ use crate::database::models::User;
 use crate::database::redis::open_task_db_connection;
 use crate::database::sqlite::{open_sqlite_db_connection, SqliteDatabaseHandler};
 use crate::database::{del_task_response, get_task_response, set_task_response};
-use crate::environment::{delete_cache_subdir, provide_cache_subdir};
+use crate::environment::{delete_cache_subdir, provide_cache_subdir, provide_directories};
 use crate::error::Error;
 use crate::models::{
     AuthLoginRequest, AuthLoginResponse, AuthRegisterRequest, ErrorResponse, MediaType,
@@ -51,6 +51,8 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
+    print!("Wait a moment, nekobox-serve is starting... ");
+
     std::env::set_var("DEFAULT_SERVICE", "youtube-dl");
     std::env::set_var("REDIS_HOSTNAME", "127.0.0.1");
 
@@ -65,11 +67,12 @@ async fn main() {
         .route("/auth/login", post(login))
         .route("/auth/register", post(register));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let axum = axum::Server::bind(&addr).serve(app.into_make_service());
+    println!("[OK]");
+    println!("Listen on {}, Port: {}", &addr.ip(), &addr.port());
+
+    axum.await.unwrap();
 }
 
 async fn create_task(
