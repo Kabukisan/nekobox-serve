@@ -329,10 +329,11 @@ async fn register(Json(payload): Json<AuthRegisterRequest>) -> Response {
 
     let connection = open_sqlite_db_connection();
     let sqlite_helper = SqliteDatabaseHandler::new(&connection);
-    let user = User::from(payload);
+    let mut user = User::from(payload);
 
     match sqlite_helper.create_user(&user) {
-        Ok(_) => {
+        Ok(id) => {
+            user.id = Some(id);
             let token = generate_token_response_for_user(&user);
             (StatusCode::OK, Json(token)).into_response()
         }
